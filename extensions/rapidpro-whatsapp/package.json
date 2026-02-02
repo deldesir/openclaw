@@ -1,0 +1,17 @@
+{
+    "name": "@openclaw/extensions-rapidpro-whatsapp",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "RapidPro WhatsApp channel plugin",
+    "openclaw": {
+        "extensions": [
+            "./src/index.ts"
+        ]
+    },
+    "peerDependencies": {
+        "openclaw": "workspace:*"
+    },
+    "dependencies": {
+        "@whiskeysockets/baileys": "7.0.0-rc.9"
+    }
+}
