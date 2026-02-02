@@ -30,6 +30,16 @@ export {
   webAuthExists,
 } from "./auth-store.js";
 
+// Registry of active sockets for Wuzapi shim access
+export const activeSockets = new Map<
+  string,
+  {
+    sock: ReturnType<typeof makeWASocket>;
+    qr?: string;
+    connection?: string;
+  }
+>();
+
 let credsSaveQueue: Promise<void> = Promise.resolve();
 function enqueueSaveCreds(
   authDir: string,
@@ -122,6 +132,9 @@ export async function createWaSocket(
     markOnlineOnConnect: false,
   });
 
+  // Register socket for external access (Shim)
+  activeSockets.set(authDir, { sock });
+
   sock.ev.on("creds.update", () => enqueueSaveCreds(authDir, saveCreds, sessionLogger));
   sock.ev.on(
     "connection.update",
@@ -135,6 +148,14 @@ export async function createWaSocket(
             qrcode.generate(qr, { small: true });
           }
         }
+
+        // Update registry
+        const entry = activeSockets.get(authDir);
+        if (entry) {
+          if (qr) entry.qr = qr;
+          if (connection) entry.connection = connection;
+        }
+
         if (connection === "close") {
           const status = getStatusCode(lastDisconnect?.error);
           if (status === DisconnectReason.loggedOut) {

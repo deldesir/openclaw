@@ -29,6 +29,7 @@ import {
 } from "./hooks.js";
 import { handleOpenAiHttpRequest } from "./openai-http.js";
 import { handleOpenResponsesHttpRequest } from "./openresponses-http.js";
+import { createWuzapiRequestHandler } from "./server-wuzapi-shim.js";
 import { handleToolsInvokeHttpRequest } from "./tools-invoke-http.js";
 
 type SubsystemLogger = ReturnType<typeof createSubsystemLogger>;
@@ -211,6 +212,7 @@ export function createGatewayHttpServer(opts: {
   openResponsesConfig?: import("../config/types.gateway.js").GatewayHttpResponsesConfig;
   handleHooksRequest: HooksRequestHandler;
   handlePluginRequest?: HooksRequestHandler;
+  handleWuzapiCompatRequest?: ReturnType<typeof createWuzapiRequestHandler>;
   resolvedAuth: import("./auth.js").ResolvedGatewayAuth;
   tlsOptions?: TlsOptions;
 }): HttpServer {
@@ -223,6 +225,7 @@ export function createGatewayHttpServer(opts: {
     openResponsesConfig,
     handleHooksRequest,
     handlePluginRequest,
+    handleWuzapiCompatRequest,
     resolvedAuth,
   } = opts;
   const httpServer: HttpServer = opts.tlsOptions
@@ -243,6 +246,9 @@ export function createGatewayHttpServer(opts: {
       const configSnapshot = loadConfig();
       const trustedProxies = configSnapshot.gateway?.trustedProxies ?? [];
       if (await handleHooksRequest(req, res)) {
+        return;
+      }
+      if (handleWuzapiCompatRequest && (await handleWuzapiCompatRequest(req, res))) {
         return;
       }
       if (

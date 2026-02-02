@@ -17,6 +17,7 @@ import { createGatewayBroadcaster } from "./server-broadcast.js";
 import { type ChatRunEntry, createChatRunState } from "./server-chat.js";
 import { MAX_PAYLOAD_BYTES } from "./server-constants.js";
 import { attachGatewayUpgradeHandler, createGatewayHttpServer } from "./server-http.js";
+import { createWuzapiRequestHandler } from "./server-wuzapi-shim.js";
 import { createGatewayHooksRequestHandler } from "./server/hooks.js";
 import { listenGatewayHttpServer } from "./server/http-listen.js";
 import { createGatewayPluginRequestHandler } from "./server/plugins-http.js";
@@ -104,6 +105,10 @@ export async function createGatewayRuntimeState(params: {
     log: params.logPlugins,
   });
 
+  const handleWuzapiCompatRequest = createWuzapiRequestHandler({
+    adminToken: process.env.OPENCLAW_ADMIN_TOKEN || "",
+  });
+
   const bindHosts = await resolveGatewayListenHosts(params.bindHost);
   const httpServers: HttpServer[] = [];
   const httpBindHosts: string[] = [];
@@ -117,6 +122,7 @@ export async function createGatewayRuntimeState(params: {
       openResponsesConfig: params.openResponsesConfig,
       handleHooksRequest,
       handlePluginRequest,
+      handleWuzapiCompatRequest,
       resolvedAuth: params.resolvedAuth,
       tlsOptions: params.gatewayTls?.enabled ? params.gatewayTls.tlsOptions : undefined,
     });
