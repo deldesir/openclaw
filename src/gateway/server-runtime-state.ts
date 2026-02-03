@@ -17,7 +17,7 @@ import { createGatewayBroadcaster } from "./server-broadcast.js";
 import { type ChatRunEntry, createChatRunState } from "./server-chat.js";
 import { MAX_PAYLOAD_BYTES } from "./server-constants.js";
 import { attachGatewayUpgradeHandler, createGatewayHttpServer } from "./server-http.js";
-import { createWuzapiRequestHandler } from "./server-wuzapi-shim.js";
+import { createRapidProRequestHandler } from "./server-rapidpro-shim.js";
 import { createGatewayHooksRequestHandler } from "./server/hooks.js";
 import { listenGatewayHttpServer } from "./server/http-listen.js";
 import { createGatewayPluginRequestHandler } from "./server/plugins-http.js";
@@ -105,7 +105,7 @@ export async function createGatewayRuntimeState(params: {
     log: params.logPlugins,
   });
 
-  const handleWuzapiCompatRequest = createWuzapiRequestHandler({
+  const handleWuzapiCompatRequest = createRapidProRequestHandler({
     adminToken: process.env.OPENCLAW_ADMIN_TOKEN || "",
   });
 

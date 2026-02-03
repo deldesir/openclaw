@@ -1,0 +1,10 @@
+{
+    "id": "extensions-rapidpro-whatsapp",
+    "name": "@openclaw/extensions-rapidpro-whatsapp",
+    "description": "RapidPro WhatsApp channel plugin",
+    "capabilities": {},
+    "configSchema": {
+        "type": "object",
+        "additionalProperties": true
+    }
+}

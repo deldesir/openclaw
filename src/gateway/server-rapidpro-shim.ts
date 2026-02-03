@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { activeSockets } from "../web/session.js";
+import { activeSockets, createWaSocket } from "../web/session.js";
 
 // Helper to write JSON response
 function json(res: ServerResponse, status: number, data: unknown) {
@@ -7,10 +7,10 @@ function json(res: ServerResponse, status: number, data: unknown) {
   res.end(JSON.stringify(data));
 }
 
-export function createWuzapiRequestHandler(opts: { adminToken: string }) {
+export function createRapidProRequestHandler(opts: { adminToken: string }) {
   return async (req: IncomingMessage, res: ServerResponse): Promise<boolean> => {
     const url = req.url || "";
-    // Check if it's a Wuzapi-compat request
+    // Check if it's a RapidPro-compat request
     if (url === "/webhook" || url.startsWith("/session/")) {
       // Verify Auth
       const authHeaders = req.headers["authorization"] || "";
@@ -31,9 +31,30 @@ export function createWuzapiRequestHandler(opts: { adminToken: string }) {
         return true;
       }
 
+      if (url === "/session/hmac/config") {
+        // RapidPro may try to configure HMAC. We accept it but don't enforce it yet.
+        json(res, 200, { status: "success" });
+        return true;
+      }
+
       // Get active socket (Single Tenant Assumption: First one found)
-      const entries = Array.from(activeSockets.values());
-      const session = entries[0];
+      let entries = Array.from(activeSockets.values());
+      let session = entries[0];
+
+      if (!session) {
+        // If no session exists, try to auto-create the default one for relevant endpoints
+        if (url === "/session/qr" || url === "/session/status") {
+          try {
+            console.log("[RapidProShim] Auto-creating default WhatsApp session...");
+            await createWaSocket(false, true);
+            // Refresh session list
+            entries = Array.from(activeSockets.values());
+            session = entries[0];
+          } catch (err) {
+            console.error("[RapidProShim] Failed to auto-create session:", err);
+          }
+        }
+      }
 
       if (!session) {
         json(res, 503, { error: "No active WhatsApp session found. Please check OpenClaw logs." });
@@ -82,7 +103,7 @@ export function createWuzapiRequestHandler(opts: { adminToken: string }) {
         let phone = "";
         try {
           const parsed = JSON.parse(body);
-          phone = parsed.phone;
+          phone = parsed.phone?.replace(/\D/g, "") || "";
         } catch (e) {
           /* ignore */
         }

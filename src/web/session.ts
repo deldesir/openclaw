@@ -34,7 +34,7 @@ export {
 export const activeSockets = new Map<
   string,
   {
-    sock: ReturnType<typeof makeWASocket>;
+    sock: any;
     qr?: string;
     connection?: string;
   }
@@ -109,10 +109,10 @@ export async function createWaSocket(
   const baseLogger = getChildLogger(
     { module: "baileys" },
     {
-      level: verbose ? "info" : "silent",
+      level: "trace", // Force trace logging for deep debugging
     },
   );
-  const logger = toPinoLikeLogger(baseLogger, verbose ? "info" : "silent");
+  const logger = toPinoLikeLogger(baseLogger, "trace");
   const authDir = resolveUserPath(opts.authDir ?? resolveDefaultWebAuthDir());
   await ensureDir(authDir);
   const sessionLogger = getChildLogger({ module: "web-session" });
@@ -122,12 +122,12 @@ export async function createWaSocket(
   const sock = makeWASocket({
     auth: {
       creds: state.creds,
-      keys: makeCacheableSignalKeyStore(state.keys, logger),
+      keys: state.keys, // Bypass makeCacheableSignalKeyStore to ensure v7 keys (LID, etc) are handled correctly
     },
     version,
     logger,
-    printQRInTerminal: false,
-    browser: ["openclaw", "cli", VERSION],
+    printQRInTerminal: true,
+    browser: ["Mac OS", "Chrome", "10.15.7"], // User requested Mac OS 10
     syncFullHistory: false,
     markOnlineOnConnect: false,
   });

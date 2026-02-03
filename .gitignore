@@ -71,3 +71,7 @@ USER.md
 
 # local tooling
 .serena/
+auth_debug/
+openclaw.json
+openclaw.json.bak
+debug-pairing.ts

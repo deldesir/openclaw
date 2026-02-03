@@ -29,7 +29,7 @@ import {
 } from "./hooks.js";
 import { handleOpenAiHttpRequest } from "./openai-http.js";
 import { handleOpenResponsesHttpRequest } from "./openresponses-http.js";
-import { createWuzapiRequestHandler } from "./server-wuzapi-shim.js";
+import { createRapidProRequestHandler } from "./server-rapidpro-shim.js";
 import { handleToolsInvokeHttpRequest } from "./tools-invoke-http.js";
 
 type SubsystemLogger = ReturnType<typeof createSubsystemLogger>;
@@ -212,7 +212,9 @@ export function createGatewayHttpServer(opts: {
   openResponsesConfig?: import("../config/types.gateway.js").GatewayHttpResponsesConfig;
   handleHooksRequest: HooksRequestHandler;
   handlePluginRequest?: HooksRequestHandler;
-  handleWuzapiCompatRequest?: ReturnType<typeof createWuzapiRequestHandler>;
+  handleWuzapiCompatRequest?: ReturnType<
+    typeof import("./server-rapidpro-shim.js").createRapidProRequestHandler
+  >;
   resolvedAuth: import("./auth.js").ResolvedGatewayAuth;
   tlsOptions?: TlsOptions;
 }): HttpServer {

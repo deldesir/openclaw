@@ -444,6 +444,15 @@ importers:
         specifier: workspace:*
         version: link:../..
 
+  extensions/rapidpro-whatsapp:
+    dependencies:
+      '@whiskeysockets/baileys':
+        specifier: 7.0.0-rc.9
+        version: 7.0.0-rc.9(audio-decode@2.2.3)(sharp@0.34.5)
+      openclaw:
+        specifier: workspace:*
+        version: link:../..
+
   extensions/signal:
     devDependencies:
       openclaw:
